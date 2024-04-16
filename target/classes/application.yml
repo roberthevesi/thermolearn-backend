@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: "api"
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/thermolearn-db
+    username: roberthevesi
+    password: toor
+    driver-class-name: org.postgresql.Driver
+
+server:
+  error:
+    include-message: always
