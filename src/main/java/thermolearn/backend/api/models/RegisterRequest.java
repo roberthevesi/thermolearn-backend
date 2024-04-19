@@ -1,4 +1,4 @@
-package thermolearn.backend.api.utils;
+package thermolearn.backend.api.models;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

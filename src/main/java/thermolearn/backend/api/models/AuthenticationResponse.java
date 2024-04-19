@@ -1,4 +1,4 @@
-package thermolearn.backend.api.utils;
+package thermolearn.backend.api.models;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,5 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AuthenticationResponse {
+    private User user;
     private String token;
 }
