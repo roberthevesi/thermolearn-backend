@@ -60,6 +60,7 @@ code/                  # Custom code directory
 .gradletasknamecache   # Gradle task cache
 .git-hooks/            # Git hooks directory
 node_modules/          # Node.js modules directory
+src/main/resources/certs/ # Certificates directory
 
 # BlueJ files
 *.ctxt                 # BlueJ context files

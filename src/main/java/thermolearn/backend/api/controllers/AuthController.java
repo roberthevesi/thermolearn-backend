@@ -19,7 +19,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(
             @RequestBody RegisterRequest registerRequest
-    ) throws Exception {
+    ) {
         try {
             return ResponseEntity.ok(userService.register(registerRequest));
         } catch (Exception e) {
