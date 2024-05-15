@@ -23,7 +23,10 @@ public class SecurityConfig {
         http
                 .csrf().disable()
                 .authorizeHttpRequests()
-                .requestMatchers("/api/v1/auth/**").permitAll()
+                .requestMatchers("/api/v1/user/register").permitAll()
+                .requestMatchers("/api/v1/user/authenticate").permitAll()
+                .requestMatchers("/api/v1/user/send-new-registration-code").permitAll()
+                .requestMatchers("/api/v1/user/verify-registration-code").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .sessionManagement()

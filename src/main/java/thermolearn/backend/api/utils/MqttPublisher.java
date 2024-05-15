@@ -19,8 +19,8 @@ import java.util.Map;
 public class MqttPublisher {
     @Value("${AWS_IOT_CLIENT_ENDPOINT}")
     private String CLIENT_ENDPOINT;
-    @Value("${KEYSTORE_PASSWORD}")
-    private String KEYSTORE_PASSWORD;
+    @Value("${AWS_KEYSTORE_PASSWORD}")
+    private String AWS_KEYSTORE_PASSWORD;
     private AWSIotMqttClient client;
 
     @PostConstruct
@@ -28,10 +28,10 @@ public class MqttPublisher {
         KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
         ClassPathResource resource = new ClassPathResource("certs/keystore.jks");
         try(InputStream keyStoreInputStream = resource.getInputStream()) {
-            keyStore.load(keyStoreInputStream, KEYSTORE_PASSWORD.toCharArray());
+            keyStore.load(keyStoreInputStream, AWS_KEYSTORE_PASSWORD.toCharArray());
         }
         String clientId = "ThermolearnBackendClientId";
-        client = new AWSIotMqttClient(CLIENT_ENDPOINT, clientId, keyStore, KEYSTORE_PASSWORD);
+        client = new AWSIotMqttClient(CLIENT_ENDPOINT, clientId, keyStore, AWS_KEYSTORE_PASSWORD);
         client.connect();
     }
 

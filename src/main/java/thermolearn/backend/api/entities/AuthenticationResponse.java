@@ -1,9 +1,10 @@
-package thermolearn.backend.api.models;
+package thermolearn.backend.api.entities;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import thermolearn.backend.api.models.User;
 
 @Data
 @Builder

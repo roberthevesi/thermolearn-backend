@@ -25,6 +25,8 @@ public class User implements UserDetails {
     @Column(unique = true)
     private String email;
     private String password;
+    private boolean isAccountVerified = false;
+    private String profilePictureURL;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
