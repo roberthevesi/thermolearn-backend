@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import thermolearn.backend.api.entities.AuthenticationRequest;
+import thermolearn.backend.api.entities.ResetForgottenPasswordRequest;
 import thermolearn.backend.api.entities.RegisterRequest;
 import thermolearn.backend.api.entities.VerificationCodeRequest;
 import thermolearn.backend.api.services.UserService;
@@ -49,6 +50,39 @@ public class UserController {
             ) {
         try {
             return ResponseEntity.ok(userService.verifyRegistrationCode(verificationCodeRequest.getEmail(), verificationCodeRequest.getCode()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/send-forgotten-password-code")
+    public ResponseEntity<?> sendForgottenPasswordCode(
+            @RequestParam String email
+    ) {
+        try {
+            return ResponseEntity.ok(userService.sendForgottenPasswordCode(email));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/verify-forgotten-password-code")
+    public ResponseEntity<?> verifyForgottenPasswordCode(
+            @RequestBody VerificationCodeRequest verificationCodeRequest
+    ) {
+        try {
+            return ResponseEntity.ok(userService.verifyForgottenPasswordCode(verificationCodeRequest.getEmail(), verificationCodeRequest.getCode()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/reset-forgotten-password")
+    public ResponseEntity<?> resetForgottenPassword(
+            @RequestBody ResetForgottenPasswordRequest resetForgottenPasswordRequest
+    ) {
+        try {
+            return ResponseEntity.ok(userService.resetForgottenPassword(resetForgottenPasswordRequest.getEmail(), resetForgottenPasswordRequest.getPassword()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

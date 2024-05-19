@@ -21,7 +21,6 @@ import thermolearn.backend.api.repositories.VerificationCodeRepository;
 import thermolearn.backend.api.utils.JwtService;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Service
 @NoArgsConstructor(force = true)
@@ -102,38 +101,16 @@ public class UserService {
         return sendVerificationCode(email, VerificationCodeType.REGISTER);
     }
 
-    @Transactional
     public boolean verifyRegistrationCode(String email, String code){
-        assert userRepository != null;
-        User user = userRepository.findByEmail(email).orElseThrow(
-                () -> new RuntimeException("User not found")
-        );
-        boolean verified = verifyCode(email, code, VerificationCodeType.REGISTER);
-
-        if(verified){
-            user.setAccountVerified(true);
-        }
-        else{
-            throw new RuntimeException("Verification code is invalid");
-        }
-
-        return verified;
+        return verifyCode(email, code, VerificationCodeType.REGISTER);
     }
 
-    public boolean verifyCode(String email, String code, VerificationCodeType type){
-        assert verificationCodeRepository != null;
-        VerificationCode verificationCode = verificationCodeRepository.findValidCode(code, email, LocalDateTime.now(), type);
+    public VerificationCode sendForgottenPasswordCode(String email) {
+        return sendVerificationCode(email, VerificationCodeType.FORGOT_PASSWORD);
+    }
 
-        if(verificationCode == null)
-            return false;
-
-        if(verificationCode.isUsed())
-            return false;
-
-        verificationCode.setUsed(true);
-        verificationCodeRepository.save(verificationCode);
-
-        return true;
+    public boolean verifyForgottenPasswordCode(String email, String code){
+        return verifyCode(email, code, VerificationCodeType.FORGOT_PASSWORD);
     }
 
     @Transactional
@@ -153,9 +130,69 @@ public class UserService {
         assert verificationCodeRepository != null;
         verificationCodeRepository.save(verificationCode);
 
+        String subject = switch (type) {
+            case REGISTER -> code + " - Your Thermolearn Registration Code";
+            case FORGOT_PASSWORD -> code + " - Your Thermolearn Password Reset Code";
+        };
+
+        String body = switch (type) {
+            case REGISTER -> "Your Thermolearn registration code is " + code + ".\nIf you did not make this request, you can simply ignore this message.\nThis is an automated message, please do not reply.";
+            case FORGOT_PASSWORD -> "Your Thermolearn password reset code is " + code + ".\nIf you did not make this request, you can simply ignore this message.\nThis is an automated message, please do not reply.";
+        };
+
         assert sesService != null;
-        sesService.sendEmail(email, code + " - Your Thermolearn Verification Code", "Your Thermolearn verification code is " + verificationCode.getCode() + ".\nIf you did not make this request, you can simply ignore this message.");
+        sesService.sendEmail(email, subject, body);
 
         return verificationCode;
+    }
+
+    @Transactional
+    public boolean verifyCode(String email, String code, VerificationCodeType type){
+        assert userRepository != null;
+        User user = userRepository.findByEmail(email).orElseThrow(
+                () -> new RuntimeException("User not found")
+        );
+        boolean verified = isVerificationCodeOk(email, code, type);
+        System.out.println("verified:" + verified);
+
+        if(type == VerificationCodeType.REGISTER){
+            if(verified && !user.isAccountVerified())
+                user.setAccountVerified(true);
+            else{
+                throw new RuntimeException("Verification code is invalid");
+            }
+        }
+
+        return verified;
+    }
+
+    public boolean isVerificationCodeOk(String email, String code, VerificationCodeType type){
+        assert verificationCodeRepository != null;
+        VerificationCode verificationCode = verificationCodeRepository.findValidCode(code, email, LocalDateTime.now(), type);
+
+        if(verificationCode == null)
+            return false;
+
+        if(verificationCode.isUsed())
+            return false;
+
+        verificationCode.setUsed(true);
+        verificationCodeRepository.save(verificationCode);
+
+        return true;
+    }
+
+    @Transactional
+    public User resetForgottenPassword(String email, String newPassword){
+        assert userRepository != null;
+        User user = userRepository.findByEmail(email).orElseThrow(
+                () -> new RuntimeException("User not found")
+        );
+
+        assert passwordEncoder != null;
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        return user;
     }
 }
