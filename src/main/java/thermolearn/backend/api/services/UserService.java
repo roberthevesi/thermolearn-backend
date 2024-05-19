@@ -16,11 +16,13 @@ import thermolearn.backend.api.entities.AuthenticationResponse;
 import thermolearn.backend.api.entities.RegisterRequest;
 import thermolearn.backend.api.entities.VerificationCodeType;
 import thermolearn.backend.api.models.*;
+import thermolearn.backend.api.repositories.PairedThermostatRepository;
 import thermolearn.backend.api.repositories.UserRepository;
 import thermolearn.backend.api.repositories.VerificationCodeRepository;
 import thermolearn.backend.api.utils.JwtService;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @NoArgsConstructor(force = true)
@@ -34,14 +36,17 @@ public class UserService {
     @Autowired
     private final AuthenticationManager authenticationManager;
     private final SESService sesService;
+    @Autowired
+    private final PairedThermostatRepository pairedThermostatRepository;
 
     @Autowired
-    public UserService(UserRepository userRepository, VerificationCodeRepository verificationCodeRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, SESService sesService) {
+    public UserService(UserRepository userRepository, VerificationCodeRepository verificationCodeRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, SESService sesService, PairedThermostatRepository pairedThermostatRepository) {
         this.userRepository = userRepository;
         this.verificationCodeRepository = verificationCodeRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.sesService = sesService;
+        this.pairedThermostatRepository = pairedThermostatRepository;
     }
 
     public AuthenticationResponse register(RegisterRequest request) throws Exception {
@@ -194,5 +199,15 @@ public class UserService {
         userRepository.save(user);
 
         return user;
+    }
+
+    public List<PairedThermostat> getUserPairedThermostats(Long userId) {
+        assert userRepository != null;
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new RuntimeException("User not found")
+        );
+
+        assert pairedThermostatRepository != null;
+        return pairedThermostatRepository.findPairedThermostatsByUserId(userId);
     }
 }

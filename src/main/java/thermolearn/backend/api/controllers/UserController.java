@@ -99,6 +99,17 @@ public class UserController {
         }
     }
 
+    @GetMapping("/get-user-paired-thermostats")
+    public ResponseEntity<?> getUserPairedThermostats(
+            @RequestParam Long userId
+    ) {
+        try {
+            return ResponseEntity.ok(userService.getUserPairedThermostats(userId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @PostMapping("/set-mode")
     public ResponseEntity<Object> setMode(@RequestParam String mode, @RequestParam Double desiredTemp) {
         deviceShadowService.updateShadow(mode, desiredTemp);
