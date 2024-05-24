@@ -13,17 +13,23 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class SESService {
-    @Value("${AWS_ACCESS_KEY_ID}")
     private String AWS_ACCESS_KEY_ID;
-    @Value("${AWS_SECRET_ACCESS_KEY}")
     private String AWS_SECRET_ACCESS_KEY;
-    @Value("${AWS_REGION}")
     private String AWS_REGION;
-    @Value("${EMAIL_SENDER}")
     private String EMAIL_SENDER;
     private AmazonSimpleEmailService sesClient;
+
+    @Autowired
+    private SecretsManagerService secretsManagerService;
+
     @PostConstruct
     public void init() {
+        this.AWS_ACCESS_KEY_ID = secretsManagerService.getSecretValue("AWS_ACCESS_KEY_ID");
+        this.AWS_SECRET_ACCESS_KEY = secretsManagerService.getSecretValue("AWS_SECRET_ACCESS_KEY");
+        this.AWS_REGION = secretsManagerService.getSecretValue("AWS_REGION");
+        this.EMAIL_SENDER = secretsManagerService.getSecretValue("EMAIL_SENDER");
+
+        System.out.println("EMAIL_SENDER: " + EMAIL_SENDER);
         BasicAWSCredentials awsCredentials = new BasicAWSCredentials(
                 AWS_ACCESS_KEY_ID,
                 AWS_SECRET_ACCESS_KEY

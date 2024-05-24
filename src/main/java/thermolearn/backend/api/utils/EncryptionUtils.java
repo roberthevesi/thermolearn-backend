@@ -1,7 +1,9 @@
 package thermolearn.backend.api.utils;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import thermolearn.backend.api.services.SecretsManagerService;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
@@ -14,8 +16,9 @@ public class EncryptionUtils {
     private static final String ALGORITHM = "AES";
     private static final String TRANSFORMATION = "AES";
 
-    public EncryptionUtils(@Value("${ENCRYPTION_SECRET_KEY}") String secretKey) {
-        this.SECRET_KEY = secretKey;
+    @Autowired
+    public EncryptionUtils(SecretsManagerService secretsManagerService) {
+        this.SECRET_KEY = secretsManagerService.getSecretValue("ENCRYPTION_SECRET_KEY");
     }
 
     public String encrypt(String input) throws Exception {

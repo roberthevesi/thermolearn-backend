@@ -27,5 +27,7 @@ public class Thermostat {
     private String encryptedId;
     private String qrCodeURL;
     private String model;
+    private String macAddress;
+    private String thingName;
     private Boolean isPaired = false;
 }

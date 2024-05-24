@@ -8,4 +8,5 @@ import java.util.UUID;
 
 @Repository
 public interface ThermostatRepository extends JpaRepository<Thermostat, UUID> {
+    Thermostat findByMacAddress(String macAddress);
 }

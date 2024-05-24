@@ -8,6 +8,7 @@ import thermolearn.backend.api.entities.AuthenticationRequest;
 import thermolearn.backend.api.entities.ResetForgottenPasswordRequest;
 import thermolearn.backend.api.entities.RegisterRequest;
 import thermolearn.backend.api.entities.VerificationCodeRequest;
+import thermolearn.backend.api.services.SecretsManagerService;
 import thermolearn.backend.api.services.UserService;
 import thermolearn.backend.api.utils.DeviceShadowService;
 import thermolearn.backend.api.utils.MqttPublisher;
@@ -122,13 +123,32 @@ public class UserController {
 //        }
     }
 
-    @PostMapping("/set-temp")
-    public ResponseEntity<Object> setTemp(@RequestParam Double temp) {
-        try {
-            mqttPublisher.publish("pi/commands", "Hello, World, from backend!");
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+//    @PostMapping("/set-temp")
+//    public ResponseEntity<Object> setTemp(@RequestParam String id) {
+//        try {
+//            mqttPublisher.publishToThermostat(id, "Hello, " + id + ", from backend!");
+//            return ResponseEntity.ok().build();
+//        } catch (Exception e) {
+//            return ResponseEntity.badRequest().body(e.getMessage());
+//        }
+//    }
+
+
+    @PostMapping("/mode")
+    public String updateThermostatMode(@RequestParam String thermostatId, @RequestParam String mode) throws Exception {
+        mqttPublisher.init();
+        mqttPublisher.publishMode(thermostatId, mode);
+        return "Mode updated for thermostat " + thermostatId;
     }
+
+    @Autowired
+    private SecretsManagerService secretsManagerService;
+
+    @GetMapping("/secret")
+    public String getSecret(@RequestParam String key) {
+//        return null;
+        return secretsManagerService.getSecretValue(key);
+    }
+
+
 }

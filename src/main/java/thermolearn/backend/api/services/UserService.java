@@ -161,12 +161,17 @@ public class UserService {
         System.out.println("verified:" + verified);
 
         if(type == VerificationCodeType.REGISTER){
+            System.out.println("user.isAccountVerified():" + user.isAccountVerified());
             if(verified && !user.isAccountVerified())
                 user.setAccountVerified(true);
             else{
                 throw new RuntimeException("Verification code is invalid");
             }
         }
+
+        userRepository.save(user);
+
+        System.out.println(user.toString());
 
         return verified;
     }
