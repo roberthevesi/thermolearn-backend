@@ -23,7 +23,6 @@ import java.security.KeyStore;
 import java.util.HashMap;
 import java.util.Map;
 
-
 @Component
 public class MqttPublisher {
 
@@ -47,13 +46,27 @@ public class MqttPublisher {
         this.privateKeyFile = secretsManagerService.getSecretValue("AWS_PRIVATE_KEY_FILE");
         this.keystorePassword = secretsManagerService.getSecretValue("AWS_KEYSTORE_PASSWORD");
 
-        String brokerUrl = "ssl://" + clientEndpoint + ":8883";
+        // Adjust to use classpath resource
+        InputStream certInputStream = getClass().getClassLoader().getResourceAsStream(certificateFile);
+        InputStream keyInputStream = getClass().getClassLoader().getResourceAsStream(privateKeyFile);
+
+        if (certInputStream == null) {
+            throw new RuntimeException("Certificate file not found in classpath: " + certificateFile);
+        }
+
+        if (keyInputStream == null) {
+            throw new RuntimeException("Private key file not found in classpath: " + privateKeyFile);
+        }
+
+        // The rest of your initialization code
+        String broker = "ssl://" + clientEndpoint + ":8883";
         MemoryPersistence persistence = new MemoryPersistence();
-        client = new MqttClient(brokerUrl, clientId, persistence);
+        client = new MqttClient(broker, clientId, persistence);
 
         MqttConnectOptions connOpts = new MqttConnectOptions();
         connOpts.setCleanSession(true);
-        connOpts.setSocketFactory(SslUtil.getSocketFactory(certificateFile, privateKeyFile, keystorePassword));
+        connOpts.setSocketFactory(SslUtil.getSocketFactory(certInputStream, keyInputStream, keystorePassword));
+
         client.connect(connOpts);
     }
 
@@ -67,7 +80,7 @@ public class MqttPublisher {
 
     public void publishMode(String thermostatId, String mode) throws MqttException {
         String topic = "thermostat/" + thermostatId + "/mode";
-        publish(topic, "mode", mode, true);  // Publish mode with retained flag
+        publish(topic, "mode", mode, true);
     }
 
     private String convertToJson(String key, String value) {
@@ -79,5 +92,8 @@ public class MqttPublisher {
             throw new RuntimeException("Failed to convert payload to JSON", e);
         }
     }
-}
 
+    public void disconnect() throws MqttException {
+        client.disconnect();
+    }
+}

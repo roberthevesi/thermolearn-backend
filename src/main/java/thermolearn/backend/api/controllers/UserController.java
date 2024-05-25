@@ -137,6 +137,7 @@ public class UserController {
     @PostMapping("/mode")
     public String updateThermostatMode(@RequestParam String thermostatId, @RequestParam String mode) throws Exception {
         mqttPublisher.init();
+//        mqttPublisher.publish();
         mqttPublisher.publishMode(thermostatId, mode);
         return "Mode updated for thermostat " + thermostatId;
     }
