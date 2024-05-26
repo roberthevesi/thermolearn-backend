@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import thermolearn.backend.api.entities.DayOfTheWeek;
 import thermolearn.backend.api.models.Schedule;
+import thermolearn.backend.api.models.Thermostat;
 import thermolearn.backend.api.repositories.PairedThermostatRepository;
 import thermolearn.backend.api.repositories.ScheduleRepository;
 import thermolearn.backend.api.repositories.ThermostatRepository;
@@ -35,6 +36,16 @@ public class ScheduleService {
 
         assert scheduleRepository != null;
         return scheduleRepository.findByThermostatIdAndUserId(thermostatId, userId);
+    }
+
+    public List<Schedule> getScheduleByThermostatId(UUID thermostatId) throws Exception {
+        assert thermostatRepository != null;
+        if(thermostatRepository.findById(thermostatId).isEmpty()){
+            throw new Exception("Thermostat not found");
+        }
+
+        assert scheduleRepository != null;
+        return scheduleRepository.findByThermostatId(thermostatId);
     }
 
     public Schedule addSchedule(DayOfTheWeek day, LocalTime time, UUID thermostatId, Long userId, Float desiredTemperature) throws Exception {

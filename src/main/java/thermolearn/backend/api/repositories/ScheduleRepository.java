@@ -12,6 +12,7 @@ import java.util.UUID;
 @Repository
 public interface ScheduleRepository extends JpaRepository<Schedule, Long>{
     List<Schedule> findByThermostatIdAndUserId(UUID thermostatId, Long userId);
+    List<Schedule> findByThermostatId(UUID thermostatId);
 
     Schedule findByThermostatIdAndUserIdAndDayAndStartTimeAndDesiredTemperature(UUID thermostatId, Long userId, DayOfTheWeek day, LocalTime time, Float desiredTemperature);
 }

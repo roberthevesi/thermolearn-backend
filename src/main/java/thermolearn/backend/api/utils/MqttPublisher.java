@@ -14,14 +14,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
+import thermolearn.backend.api.models.Thermostat;
+import thermolearn.backend.api.repositories.ThermostatRepository;
 import thermolearn.backend.api.services.SecretsManagerService;
 import thermolearn.backend.api.utils.SslUtil;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Component
 public class MqttPublisher {
@@ -31,6 +39,9 @@ public class MqttPublisher {
     private String certificateFile;
     private String privateKeyFile;
     private String keystorePassword;
+
+    @Autowired
+    private ThermostatRepository thermostatRepository;
 
     private MqttClient client;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -70,17 +81,73 @@ public class MqttPublisher {
         client.connect(connOpts);
     }
 
-    public void publish(String topic, String key, String value, boolean retained) throws MqttException {
-        String jsonPayload = convertToJson(key, value);
+//    public void publish(String topic, String key, String value, boolean retained) throws MqttException {
+//        String jsonPayload = convertToJson(key, value);
+//        MqttMessage message = new MqttMessage(jsonPayload.getBytes());
+//        message.setQos(0);
+//        message.setRetained(retained);
+//        client.publish(topic, message);
+//    }
+
+    public void publishMultiple(String topic, Map<String, String> keyValuePairs, boolean retained) throws MqttException {
+        String jsonPayload = convertToJson(keyValuePairs);
         MqttMessage message = new MqttMessage(jsonPayload.getBytes());
         message.setQos(0);
         message.setRetained(retained);
         client.publish(topic, message);
     }
 
-    public void publishMode(String thermostatId, String mode) throws MqttException {
-        String topic = "thermostat/" + thermostatId + "/mode";
-        publish(topic, "mode", mode, true);
+//    public void publishMode(String thermostatId, String mode) throws MqttException {
+//        String topic = "thermostat/" + thermostatId + "/mode";
+//        publish(topic, "mode", mode, true);
+//    }
+
+    public boolean publishTemperatureRequest(String thermostatId, Float temperature) throws MqttException {
+        try{
+            Thermostat thermostat = thermostatRepository.findById(UUID.fromString(thermostatId)).orElseThrow(() -> new RuntimeException("Thermostat not found"));
+            if (!thermostat.getIsPaired()) {
+                throw new RuntimeException("Thermostat is not paired");
+            }
+
+            String topic = "thermostats/" + thermostatId + "/temperatureRequests";
+            Map<String, String> keyValuePairs = new HashMap<>();
+            keyValuePairs.put("desiredTemp", temperature.toString());
+
+            long epochMillis = System.currentTimeMillis();
+            LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(epochMillis), ZoneId.systemDefault());
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String formattedDateTime = dateTime.format(formatter);
+            keyValuePairs.put("timestamp", formattedDateTime);
+
+            publishMultiple(topic, keyValuePairs, true);
+            return true;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to publish temperature request", e);
+        }
+    }
+
+    public boolean publishUpdatedScheduleRequest(String thermostatId){
+        try{
+            Thermostat thermostat = thermostatRepository.findById(UUID.fromString(thermostatId)).orElseThrow(() -> new RuntimeException("Thermostat not found"));
+            if (!thermostat.getIsPaired()) {
+                throw new RuntimeException("Thermostat is not paired");
+            }
+
+            String topic = "thermostats/" + thermostatId + "/updatedScheduleRequests";
+            Map<String, String> keyValuePairs = new HashMap<>();
+            keyValuePairs.put("updateSchedule", "true");
+
+            long epochMillis = System.currentTimeMillis();
+            LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(epochMillis), ZoneId.systemDefault());
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String formattedDateTime = dateTime.format(formatter);
+            keyValuePairs.put("timestamp", formattedDateTime);
+
+            publishMultiple(topic, keyValuePairs, true);
+            return true;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to publish updated schedule request", e);
+        }
     }
 
     private String convertToJson(String key, String value) {
@@ -88,6 +155,14 @@ public class MqttPublisher {
             Map<String, String> payloadMap = new HashMap<>();
             payloadMap.put(key, value);
             return objectMapper.writeValueAsString(payloadMap);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to convert payload to JSON", e);
+        }
+    }
+
+    private String convertToJson(Map<String, String> keyValuePairs) {
+        try {
+            return objectMapper.writeValueAsString(keyValuePairs);
         } catch (Exception e) {
             throw new RuntimeException("Failed to convert payload to JSON", e);
         }

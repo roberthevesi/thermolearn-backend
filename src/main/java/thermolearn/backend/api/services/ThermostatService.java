@@ -42,6 +42,12 @@ public class ThermostatService {
 
     @Transactional
     public Thermostat createThermostat(String model, String macAddress) throws Exception {
+        assert thermostatRepository != null;
+        Thermostat existingThermostat = thermostatRepository.findByMacAddress(macAddress);
+
+        if(existingThermostat != null)
+            throw new RuntimeException("Thermostat already exists");
+
         Thermostat thermostat = Thermostat
                 .builder()
                 .model(model)

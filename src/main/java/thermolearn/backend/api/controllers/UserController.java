@@ -134,22 +134,11 @@ public class UserController {
 //    }
 
 
-    @PostMapping("/mode")
-    public String updateThermostatMode(@RequestParam String thermostatId, @RequestParam String mode) throws Exception {
-        mqttPublisher.init();
-//        mqttPublisher.publish();
-        mqttPublisher.publishMode(thermostatId, mode);
-        return "Mode updated for thermostat " + thermostatId;
-    }
-
-    @Autowired
-    private SecretsManagerService secretsManagerService;
-
-    @GetMapping("/secret")
-    public String getSecret(@RequestParam String key) {
-//        return null;
-        return secretsManagerService.getSecretValue(key);
-    }
-
-
+//    @PostMapping("/mode")
+//    public String updateThermostatMode(@RequestParam String thermostatId, @RequestParam String mode) throws Exception {
+//        mqttPublisher.init();
+////        mqttPublisher.publish();
+//        mqttPublisher.publishMode(thermostatId, mode);
+//        return "Mode updated for thermostat " + thermostatId;
+//    }
 }

@@ -8,9 +8,11 @@ import software.amazon.awssdk.services.iot.model.CreateKeysAndCertificateRespons
 import thermolearn.backend.api.entities.CreateThermostatRequest;
 import thermolearn.backend.api.entities.PairThermostatRequest;
 import thermolearn.backend.api.entities.ScheduleRequest;
+import thermolearn.backend.api.entities.UpdateTemperatureRequest;
 import thermolearn.backend.api.services.ScheduleService;
 import thermolearn.backend.api.services.ThermostatService;
 import thermolearn.backend.api.utils.AwsIotService;
+import thermolearn.backend.api.utils.MqttPublisher;
 
 import java.util.UUID;
 
@@ -22,6 +24,8 @@ public class ThermostatController {
     private final ThermostatService thermostatService;
     @Autowired
     private final ScheduleService scheduleService;
+    @Autowired
+    private MqttPublisher mqttPublisher;
 
     @PostMapping("/create-thermostat")
     public ResponseEntity<?> createThermostat(
@@ -79,6 +83,17 @@ public class ThermostatController {
         }
     }
 
+    @GetMapping("/get-schedule-by-thermostat-id")
+    public ResponseEntity<?> getScheduleByThermostatId(
+            @RequestParam String thermostatId
+    ) {
+        try {
+            return ResponseEntity.ok(scheduleService.getScheduleByThermostatId(UUID.fromString(thermostatId)));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @PostMapping("/add-schedule")
     public ResponseEntity<?> addSchedule(
             @RequestBody ScheduleRequest request
@@ -100,6 +115,21 @@ public class ThermostatController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @PostMapping("/update-temperature")
+    public boolean updateTemperature(@RequestBody UpdateTemperatureRequest request) throws Exception {
+        mqttPublisher.init();
+        return mqttPublisher.publishTemperatureRequest(request.getThermostatId(), request.getTemperature());
+    }
+
+    @PostMapping("/update-schedule-request")
+    public boolean updateScheduleRequest(@RequestParam String thermostatId) throws Exception {
+        mqttPublisher.init();
+        return mqttPublisher.publishUpdatedScheduleRequest(thermostatId);
+    }
+
+
+
 
 //    @Autowired
 //    private AwsIotService awsIotService;
