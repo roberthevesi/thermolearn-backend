@@ -128,7 +128,27 @@ public class ThermostatController {
         return mqttPublisher.publishUpdatedScheduleRequest(thermostatId);
     }
 
+    @GetMapping("/get-target-temperature")
+    public ResponseEntity<?> getTargetTemperature(
+            @RequestParam String thermostatId
+    ) {
+        try {
+            return ResponseEntity.ok(mqttPublisher.getTargetTemperature(thermostatId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 
+    @GetMapping("/get-thermostat-status")
+    public ResponseEntity<?> getThermostatStatus(
+            @RequestParam String thermostatId
+    ) {
+        try {
+            return ResponseEntity.ok(mqttPublisher.getThermostatStatus(thermostatId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 
 
 //    @Autowired

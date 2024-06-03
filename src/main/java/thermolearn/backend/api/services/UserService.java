@@ -215,4 +215,18 @@ public class UserService {
         assert pairedThermostatRepository != null;
         return pairedThermostatRepository.findPairedThermostatsByUserId(userId);
     }
+
+    public User updateUserHomeLocation(Long userId, Double latitude, Double longitude) {
+        assert userRepository != null;
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new RuntimeException("User not found")
+        );
+
+        user.setHomeLatitude(latitude);
+        user.setHomeLongitude(longitude);
+
+        userRepository.save(user);
+
+        return user;
+    }
 }

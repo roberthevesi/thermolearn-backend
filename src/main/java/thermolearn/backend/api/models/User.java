@@ -27,6 +27,8 @@ public class User implements UserDetails {
     private String password;
     private boolean isAccountVerified = false;
     private String profilePictureURL;
+    private Double homeLatitude;
+    private Double homeLongitude;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -4,10 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import thermolearn.backend.api.entities.AuthenticationRequest;
-import thermolearn.backend.api.entities.ResetForgottenPasswordRequest;
-import thermolearn.backend.api.entities.RegisterRequest;
-import thermolearn.backend.api.entities.VerificationCodeRequest;
+import thermolearn.backend.api.entities.*;
 import thermolearn.backend.api.services.SecretsManagerService;
 import thermolearn.backend.api.services.UserService;
 import thermolearn.backend.api.utils.DeviceShadowService;
@@ -106,6 +103,17 @@ public class UserController {
     ) {
         try {
             return ResponseEntity.ok(userService.getUserPairedThermostats(userId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/update-user-home-location")
+    public ResponseEntity<?> updateUserHomeLocation(
+            @RequestBody UpdateUserHomeLocationRequest request
+            ) {
+        try {
+            return ResponseEntity.ok(userService.updateUserHomeLocation(request.getUserId(), request.getHomeLatitude(), request.getHomeLongitude()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

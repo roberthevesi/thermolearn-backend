@@ -18,6 +18,7 @@ import thermolearn.backend.api.models.Thermostat;
 import thermolearn.backend.api.repositories.ThermostatRepository;
 import thermolearn.backend.api.services.SecretsManagerService;
 import thermolearn.backend.api.utils.SslUtil;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -28,6 +29,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -57,7 +59,6 @@ public class MqttPublisher {
         this.privateKeyFile = secretsManagerService.getSecretValue("AWS_PRIVATE_KEY_FILE");
         this.keystorePassword = secretsManagerService.getSecretValue("AWS_KEYSTORE_PASSWORD");
 
-        // Adjust to use classpath resource
         InputStream certInputStream = getClass().getClassLoader().getResourceAsStream(certificateFile);
         InputStream keyInputStream = getClass().getClassLoader().getResourceAsStream(privateKeyFile);
 
@@ -69,7 +70,6 @@ public class MqttPublisher {
             throw new RuntimeException("Private key file not found in classpath: " + privateKeyFile);
         }
 
-        // The rest of your initialization code
         String broker = "ssl://" + clientEndpoint + ":8883";
         MemoryPersistence persistence = new MemoryPersistence();
         client = new MqttClient(broker, clientId, persistence);
@@ -102,7 +102,7 @@ public class MqttPublisher {
 //        publish(topic, "mode", mode, true);
 //    }
 
-    public boolean publishTemperatureRequest(String thermostatId, Float temperature) throws MqttException {
+    public boolean publishTemperatureRequest(String thermostatId, Float temperature) {
         try{
             Thermostat thermostat = thermostatRepository.findById(UUID.fromString(thermostatId)).orElseThrow(() -> new RuntimeException("Thermostat not found"));
             if (!thermostat.getIsPaired()) {
@@ -167,6 +167,80 @@ public class MqttPublisher {
             throw new RuntimeException("Failed to convert payload to JSON", e);
         }
     }
+
+    public String fetchValueFromTopic(String topic, String key) {
+        try {
+            final String[] result = {null};
+            client.subscribe(topic, (topic1, message) -> {
+                String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
+                try {
+                    Map<String, Object> map = objectMapper.readValue(payload, new TypeReference<Map<String, Object>>() {});
+                    if (map.containsKey(key)) {
+                        result[0] = map.get(key).toString();
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException("Failed to parse JSON payload", e);
+                }
+                synchronized (result) {
+                    result.notify();
+                }
+            });
+
+            synchronized (result) {
+                result.wait(5000); // wait for 5 seconds for a message
+            }
+
+            return result[0];
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch value from topic", e);
+        } finally {
+            try {
+                client.unsubscribe(topic);
+            } catch (MqttException e) {
+                throw new RuntimeException("Failed to unsubscribe from topic", e);
+            }
+        }
+    }
+
+    public String getTargetTemperature(String thermostatId) {
+        try {
+            Thermostat thermostat = thermostatRepository.findById(UUID.fromString(thermostatId)).orElseThrow(() -> new RuntimeException("Thermostat not found"));
+            if (!thermostat.getIsPaired()) {
+                throw new RuntimeException("Thermostat is not paired");
+            }
+
+            String topic = "thermostats/" + thermostatId + "/temperatureRequests";
+            return fetchValueFromTopic(topic, "desiredTemp");
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get target temperature", e);
+        }
+    }
+
+    public Map<String, String> getThermostatStatus(String thermostatId) {
+        try {
+            Thermostat thermostat = thermostatRepository.findById(UUID.fromString(thermostatId)).orElseThrow(() -> new RuntimeException("Thermostat not found"));
+            if (!thermostat.getIsPaired()) {
+                throw new RuntimeException("Thermostat is not paired");
+            }
+
+            String topic = "thermostats/" + thermostatId + "/status";
+            Map<String, String> statusMap = new HashMap<>();
+
+            List<String> keys = List.of("ambientTemperature", "heatingStatus", "ambientHumidity");
+
+            for (String key : keys) {
+                String value = fetchValueFromTopic(topic, key);
+                if (value != null) {
+                    statusMap.put(key, value);
+                }
+            }
+
+            return statusMap;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get thermostat status", e);
+        }
+    }
+
 
     public void disconnect() throws MqttException {
         client.disconnect();
