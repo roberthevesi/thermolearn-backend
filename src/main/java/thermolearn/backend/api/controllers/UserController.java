@@ -4,9 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import thermolearn.backend.api.entities.AuthenticationRequest;
-import thermolearn.backend.api.entities.RegisterRequest;
-import thermolearn.backend.api.entities.VerificationCodeRequest;
+import thermolearn.backend.api.entities.*;
+import thermolearn.backend.api.services.SecretsManagerService;
 import thermolearn.backend.api.services.UserService;
 import thermolearn.backend.api.utils.DeviceShadowService;
 import thermolearn.backend.api.utils.MqttPublisher;
@@ -54,12 +53,67 @@ public class UserController {
         }
     }
 
+    @PostMapping("/send-forgotten-password-code")
+    public ResponseEntity<?> sendForgottenPasswordCode(
+            @RequestParam String email
+    ) {
+        try {
+            return ResponseEntity.ok(userService.sendForgottenPasswordCode(email));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/verify-forgotten-password-code")
+    public ResponseEntity<?> verifyForgottenPasswordCode(
+            @RequestBody VerificationCodeRequest verificationCodeRequest
+    ) {
+        try {
+            return ResponseEntity.ok(userService.verifyForgottenPasswordCode(verificationCodeRequest.getEmail(), verificationCodeRequest.getCode()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/reset-forgotten-password")
+    public ResponseEntity<?> resetForgottenPassword(
+            @RequestBody ResetForgottenPasswordRequest resetForgottenPasswordRequest
+    ) {
+        try {
+            return ResponseEntity.ok(userService.resetForgottenPassword(resetForgottenPasswordRequest.getEmail(), resetForgottenPasswordRequest.getPassword()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @PostMapping("/authenticate")
     public ResponseEntity<?> authenticate(
             @RequestBody AuthenticationRequest authenticationRequest
     ){
         try {
             return ResponseEntity.ok(userService.authenticate(authenticationRequest));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/get-user-paired-thermostats")
+    public ResponseEntity<?> getUserPairedThermostats(
+            @RequestParam Long userId
+    ) {
+        try {
+            return ResponseEntity.ok(userService.getUserPairedThermostats(userId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/update-user-home-location")
+    public ResponseEntity<?> updateUserHomeLocation(
+            @RequestBody UpdateUserHomeLocationRequest request
+            ) {
+        try {
+            return ResponseEntity.ok(userService.updateUserHomeLocation(request.getUserId(), request.getHomeLatitude(), request.getHomeLongitude()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -77,13 +131,22 @@ public class UserController {
 //        }
     }
 
-    @PostMapping("/set-temp")
-    public ResponseEntity<Object> setTemp(@RequestParam Double temp) {
-        try {
-            mqttPublisher.publish("pi/commands", "Hello, World, from backend!");
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
+//    @PostMapping("/set-temp")
+//    public ResponseEntity<Object> setTemp(@RequestParam String id) {
+//        try {
+//            mqttPublisher.publishToThermostat(id, "Hello, " + id + ", from backend!");
+//            return ResponseEntity.ok().build();
+//        } catch (Exception e) {
+//            return ResponseEntity.badRequest().body(e.getMessage());
+//        }
+//    }
+
+
+//    @PostMapping("/mode")
+//    public String updateThermostatMode(@RequestParam String thermostatId, @RequestParam String mode) throws Exception {
+//        mqttPublisher.init();
+////        mqttPublisher.publish();
+//        mqttPublisher.publishMode(thermostatId, mode);
+//        return "Mode updated for thermostat " + thermostatId;
+//    }
 }

@@ -6,9 +6,11 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import thermolearn.backend.api.services.SecretsManagerService;
 
 import java.security.Key;
 import java.util.Date;
@@ -20,12 +22,18 @@ import static javax.crypto.Cipher.SECRET_KEY;
 
 @Service
 public class JwtService {
-    @Value("${JWT_SECRET_KEY}")
-    private String secretKey;
     private static Key key;
+
+    private final SecretsManagerService secretsManagerService;
+
+    @Autowired
+    public JwtService(SecretsManagerService secretsManagerService) {
+        this.secretsManagerService = secretsManagerService;
+    }
 
     @PostConstruct
     public void init() {
+        String secretKey = secretsManagerService.getSecretValue("JWT_SECRET_KEY");
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         key = Keys.hmacShaKeyFor(keyBytes);
     }
@@ -56,6 +64,7 @@ public class JwtService {
 
     public static String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
         long duration = 1000 * 60 * 60 * 24 * 14; // 14 days
+//        long duration = 1000 * 10; // 10 s
         Date expiryDate = new Date(System.currentTimeMillis() + duration);
 
         return Jwts.builder()
