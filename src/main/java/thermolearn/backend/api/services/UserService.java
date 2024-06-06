@@ -16,13 +16,12 @@ import thermolearn.backend.api.entities.AuthenticationResponse;
 import thermolearn.backend.api.entities.RegisterRequest;
 import thermolearn.backend.api.entities.VerificationCodeType;
 import thermolearn.backend.api.models.*;
-import thermolearn.backend.api.repositories.PairedThermostatRepository;
-import thermolearn.backend.api.repositories.UserRepository;
-import thermolearn.backend.api.repositories.VerificationCodeRepository;
+import thermolearn.backend.api.repositories.*;
 import thermolearn.backend.api.utils.JwtService;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @NoArgsConstructor(force = true)
@@ -38,15 +37,18 @@ public class UserService {
     private final SESService sesService;
     @Autowired
     private final PairedThermostatRepository pairedThermostatRepository;
+    @Autowired
+    private final LogRepository logRepository;
 
     @Autowired
-    public UserService(UserRepository userRepository, VerificationCodeRepository verificationCodeRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, SESService sesService, PairedThermostatRepository pairedThermostatRepository) {
+    public UserService(UserRepository userRepository, VerificationCodeRepository verificationCodeRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, SESService sesService, PairedThermostatRepository pairedThermostatRepository, LogRepository logRepository) {
         this.userRepository = userRepository;
         this.verificationCodeRepository = verificationCodeRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.sesService = sesService;
         this.pairedThermostatRepository = pairedThermostatRepository;
+        this.logRepository = logRepository;
     }
 
     public AuthenticationResponse register(RegisterRequest request) throws Exception {

@@ -33,6 +33,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/thermostat/get-thermostat-by-mac-address").permitAll()
                 .requestMatchers("/api/v1/thermostat/update-temperature").permitAll()
                 .requestMatchers("/api/v1/thermostat/get-schedule-by-thermostat-id").permitAll()
+                .requestMatchers("/api/v1/log/get-user-logs-by-thermostat-id").permitAll()
+                .requestMatchers("/api/v1/thermostat-log/save-log").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .sessionManagement()

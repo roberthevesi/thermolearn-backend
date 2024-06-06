@@ -2,6 +2,7 @@ package thermolearn.backend.api.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import thermolearn.backend.api.entities.AuthenticationResponse;
 import thermolearn.backend.api.models.PairedThermostat;
 
 import java.util.List;
@@ -12,4 +13,5 @@ import java.util.UUID;
 public interface PairedThermostatRepository extends JpaRepository<PairedThermostat, Long> {
     Optional<PairedThermostat> findByThermostatIdAndUserId(UUID thermostatId, Long userId);
     List<PairedThermostat> findPairedThermostatsByUserId(Long userId);
+    PairedThermostat findByThermostatId(UUID thermostatId);
 }
