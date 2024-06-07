@@ -8,6 +8,10 @@ import thermolearn.backend.api.models.ThermostatStatusLogs;
 import thermolearn.backend.api.repositories.PairedThermostatRepository;
 import thermolearn.backend.api.repositories.ThermostatStatusLogsRepository;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -21,13 +25,30 @@ public class ThermostatStatusLogsService {
 
     public ThermostatStatusLogs saveLog(ThermostatStatusLogs log) {
         assert pairedThermostatRepository != null;
-        System.out.println(log.getThermostatId());
         PairedThermostat pairedThermostat = pairedThermostatRepository.findByThermostatId(log.getThermostatId());
         if (pairedThermostat == null) {
-            throw new IllegalArgumentException("Thermostat not found");
+            throw new IllegalArgumentException("Thermostat is not paired");
         }
+
+        log.setUserId(pairedThermostat.getUserId());
 
         assert thermostatStatusLogsRepository != null;
         return thermostatStatusLogsRepository.save(log);
+    }
+
+    public List<ThermostatStatusLogs> getThermostatStatusLogs(String thermostatId, Long userId) {
+        assert pairedThermostatRepository != null;
+        Optional<PairedThermostat> pairedThermostat = pairedThermostatRepository.findByThermostatIdAndUserId(UUID.fromString(thermostatId), userId);
+
+        if (pairedThermostat.isEmpty()) {
+            throw new IllegalArgumentException("Pairing not found");
+        }
+
+        assert thermostatStatusLogsRepository != null;
+
+        LocalDateTime sevenDaysAgo = LocalDateTime.now(ZoneId.systemDefault()).minusDays(7);
+        LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
+
+        return thermostatStatusLogsRepository.findAllByThermostatIdAndUserIdAndTimestampAfterAndTimestampBefore(UUID.fromString(thermostatId), userId, sevenDaysAgo, now);
     }
 }

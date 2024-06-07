@@ -33,4 +33,15 @@ public class LogController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @GetMapping("/get-latest-user-log-by-thermostat-id")
+    public ResponseEntity<?> getLatestUserLogByThermostatId(
+            @RequestParam String thermostatId
+    ) {
+        try {
+            return ResponseEntity.ok(logService.getLatestLogByThermostatId(thermostatId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

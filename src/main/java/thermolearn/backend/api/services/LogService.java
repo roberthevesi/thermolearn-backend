@@ -36,8 +36,6 @@ public class LogService {
         return logRepository.save(log);
     }
 
-
-
     public List<Log> getLogsByThermostatId(String thermostatId) {
         assert pairedThermostatRepository != null;
         PairedThermostat pairedThermostat = pairedThermostatRepository.findByThermostatId(UUID.fromString(thermostatId));
@@ -46,5 +44,15 @@ public class LogService {
 
         assert logRepository != null;
         return logRepository.findAllByUserId(userId);
+    }
+
+    public Log getLatestLogByThermostatId(String thermostatId) {
+        assert pairedThermostatRepository != null;
+        PairedThermostat pairedThermostat = pairedThermostatRepository.findByThermostatId(UUID.fromString(thermostatId));
+
+        Long userId = pairedThermostat.getUserId();
+
+        assert logRepository != null;
+        return logRepository.findFirstByUserIdOrderByTimestampDesc(userId);
     }
 }

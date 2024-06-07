@@ -231,4 +231,31 @@ public class UserService {
 
         return user;
     }
+
+    public User updateUserDistanceFromHome(Long userId, Integer distance) {
+        assert userRepository != null;
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new RuntimeException("User not found")
+        );
+
+        user.setDistanceFromHome(distance);
+        userRepository.save(user);
+
+        return user;
+    }
+
+    public Integer getUserDistanceFromHome(String thermostatId) {
+        assert pairedThermostatRepository != null;
+        PairedThermostat pairedThermostat = pairedThermostatRepository.findByThermostatId(UUID.fromString(thermostatId));
+        if (pairedThermostat == null) {
+            throw new IllegalArgumentException("Thermostat is not paired");
+        }
+
+        assert userRepository != null;
+        User user = userRepository.findById(pairedThermostat.getUserId()).orElseThrow(
+                () -> new RuntimeException("User not found")
+        );
+
+        return user.getDistanceFromHome();
+    }
 }
