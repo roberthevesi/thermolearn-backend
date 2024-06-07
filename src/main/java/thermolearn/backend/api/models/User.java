@@ -29,6 +29,7 @@ public class User implements UserDetails {
     private String profilePictureURL;
     private Double homeLatitude;
     private Double homeLongitude;
+    private Integer distanceFromHome;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

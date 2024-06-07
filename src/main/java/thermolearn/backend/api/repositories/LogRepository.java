@@ -10,4 +10,5 @@ import java.util.UUID;
 @Repository
 public interface LogRepository extends JpaRepository<Log, Long> {
     List<Log> findAllByUserId(Long userId);
+    Log findFirstByUserIdOrderByTimestampDesc(Long userId);
 }

@@ -119,6 +119,28 @@ public class UserController {
         }
     }
 
+    @PostMapping("/update-user-distance-from-home")
+    public ResponseEntity<?> updateUserDistanceFromHome(
+            @RequestBody UpdateUserDistanceFromHomeRequest request
+    ) {
+        try {
+            return ResponseEntity.ok(userService.updateUserDistanceFromHome(request.getUserId(), request.getDistanceFromHome()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/get-user-distance-from-home")
+    public ResponseEntity<?> getUserDistanceFromHome(
+            @RequestParam String thermostatId
+    ) {
+        try {
+            return ResponseEntity.ok(userService.getUserDistanceFromHome(thermostatId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @PostMapping("/set-mode")
     public ResponseEntity<Object> setMode(@RequestParam String mode, @RequestParam Double desiredTemp) {
         deviceShadowService.updateShadow(mode, desiredTemp);
