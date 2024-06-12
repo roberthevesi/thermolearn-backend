@@ -237,6 +237,7 @@ public class MqttPublisher {
 
             return statusMap;
         } catch (Exception e) {
+            System.out.println("ERROR:" + e);
             throw new RuntimeException("Failed to get thermostat status", e);
         }
     }

@@ -37,6 +37,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/thermostat-log/save-log").permitAll()
                 .requestMatchers("/api/v1/log/get-latest-user-log-by-thermostat-id").permitAll()
                 .requestMatchers("/api/v1/user/get-user-distance-from-home").permitAll()
+                .requestMatchers("/api/v1/thermostat/set-thermostat-fingerprint").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .sessionManagement()
