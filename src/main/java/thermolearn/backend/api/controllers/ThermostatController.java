@@ -9,6 +9,7 @@ import thermolearn.backend.api.entities.CreateThermostatRequest;
 import thermolearn.backend.api.entities.PairThermostatRequest;
 import thermolearn.backend.api.entities.ScheduleRequest;
 import thermolearn.backend.api.entities.UpdateTemperatureRequest;
+import thermolearn.backend.api.models.PairedThermostat;
 import thermolearn.backend.api.services.ScheduleService;
 import thermolearn.backend.api.services.ThermostatService;
 import thermolearn.backend.api.utils.AwsIotService;
@@ -49,6 +50,41 @@ public class ThermostatController {
         }
     }
 
+    @GetMapping("/is-thermostat-ready-to-pair")
+    public ResponseEntity<?> isThermostatReadyToPair(
+            @RequestParam String thermostatId,
+            @RequestParam Long userId
+            ) {
+        try {
+            return ResponseEntity.ok(thermostatService.isThermostatReadyToPair(thermostatId, userId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/set-thermostat-fingerprint")
+    public ResponseEntity<?> setThermostatFingerprint(
+            @RequestParam String thermostatId,
+            @RequestParam String fingerprint
+    ) {
+        try {
+            return ResponseEntity.ok(thermostatService.setThermostatFingerprint(thermostatId, fingerprint));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/get-thermostat-fingerprint")
+    public ResponseEntity<?> getThermostatFingerprint(
+            @RequestParam String thermostatId
+    ) {
+        try {
+            return ResponseEntity.ok(thermostatService.getThermostatFingerprint(thermostatId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @PostMapping("/pair-thermostat")
     public ResponseEntity<?> pairThermostat(
             @RequestBody PairThermostatRequest request
@@ -65,6 +101,8 @@ public class ThermostatController {
             @RequestBody PairThermostatRequest request
     ) {
         try {
+            mqttPublisher.init();
+            mqttPublisher.publishUnpairRequest(request.getThermostatId());
             return ResponseEntity.ok(thermostatService.unPairThermostat(request.getThermostatId(), request.getUserId()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

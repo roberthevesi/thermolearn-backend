@@ -86,6 +86,49 @@ public class ThermostatService {
         return thermostat;
     }
 
+
+    public boolean isThermostatReadyToPair(String encryptedThermostatId, Long userId) throws Exception {
+        assert encryptionUtils != null;
+        String decryptedThermostatId = encryptionUtils.decrypt(encryptedThermostatId);
+
+        assert userRepository != null;
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new RuntimeException("User not found")
+        );
+
+        assert thermostatRepository != null;
+        Thermostat thermostat = thermostatRepository.findById(UUID.fromString(decryptedThermostatId)).orElseThrow(
+                () -> new RuntimeException("Thermostat not found")
+        );
+
+        assert pairedThermostatRepository != null;
+        PairedThermostat pairedThermostat = pairedThermostatRepository.findByThermostatIdAndUserId(UUID.fromString(decryptedThermostatId), userId).orElse(null);
+
+        return pairedThermostat == null;
+    }
+
+    public Thermostat setThermostatFingerprint(String thermostatId, String fingerprint) throws Exception {
+        assert thermostatRepository != null;
+        Thermostat thermostat = thermostatRepository.findById(UUID.fromString(thermostatId)).orElseThrow(
+                () -> new RuntimeException("Thermostat not found")
+        );
+
+        thermostat.setFingerprint(fingerprint);
+        return thermostatRepository.save(thermostat);
+    }
+
+    public String getThermostatFingerprint(String encryptedThermostatId) throws Exception {
+        assert encryptionUtils != null;
+        String decryptedThermostatId = encryptionUtils.decrypt(encryptedThermostatId);
+
+        assert thermostatRepository != null;
+        Thermostat thermostat = thermostatRepository.findById(UUID.fromString(decryptedThermostatId)).orElseThrow(
+                () -> new RuntimeException("Thermostat not found")
+        );
+
+        return thermostat.getFingerprint();
+    }
+
     @Transactional
     public PairedThermostat pairThermostat(String encryptedThermostatId, Long userId) throws Exception {
         assert encryptionUtils != null;
@@ -105,8 +148,9 @@ public class ThermostatService {
             throw new RuntimeException("Thermostat is already paired");
         thermostat.setIsPaired(true);
 
-        String thingName = createThing(decryptedThermostatId);
-        thermostat.setThingName(thingName);
+        // THING NO LONGER USED
+//        String thingName = createThing(decryptedThermostatId);
+//        thermostat.setThingName(thingName);
         thermostatRepository.save(thermostat);
 
         PairedThermostat pairedThermostat = PairedThermostat

@@ -28,6 +28,7 @@ public class Thermostat {
     private String qrCodeURL;
     private String model;
     private String macAddress;
-    private String thingName;
+    //private String thingName; THING NO LONGER USED
     private Boolean isPaired = false;
+    private String fingerprint;
 }
