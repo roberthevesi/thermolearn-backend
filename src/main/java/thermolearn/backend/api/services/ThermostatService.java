@@ -200,7 +200,7 @@ public class ThermostatService {
 
         assert scheduleRepository != null;
         List<Schedule> schedules = scheduleRepository.findByThermostatIdAndUserId(UUID.fromString(thermostatId), userId);
-//        scheduleRepository.deleteAll(schedules);
+        scheduleRepository.deleteAll(schedules);
 
         pairedThermostatRepository.delete(pairedThermostat);
 

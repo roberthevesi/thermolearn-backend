@@ -101,6 +101,8 @@ public class ThermostatController {
             @RequestBody PairThermostatRequest request
     ) {
         try {
+            mqttPublisher.init();
+            mqttPublisher.publishUnpairRequest(request.getThermostatId());
             return ResponseEntity.ok(thermostatService.unPairThermostat(request.getThermostatId(), request.getUserId()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

@@ -150,6 +150,31 @@ public class MqttPublisher {
         }
     }
 
+    public boolean publishUnpairRequest(String thermostatId) throws MqttException {
+        try{
+            Thermostat thermostat = thermostatRepository.findById(UUID.fromString(thermostatId)).orElseThrow(() -> new RuntimeException("Thermostat not found"));
+            if (!thermostat.getIsPaired()) {
+                throw new RuntimeException("Thermostat is not paired");
+            }
+
+            String topic = "thermostats/" + thermostatId + "/unpairRequests";
+            Map<String, String> keyValuePairs = new HashMap<>();
+            keyValuePairs.put("unpair", "true");
+
+            long epochMillis = System.currentTimeMillis();
+            LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(epochMillis), ZoneId.systemDefault());
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String formattedDateTime = dateTime.format(formatter);
+            keyValuePairs.put("timestamp", formattedDateTime);
+
+            publishMultiple(topic, keyValuePairs, true);
+            return true;
+        }
+        catch (Exception e) {
+            throw new RuntimeException("Failed to publish unpair request", e);
+        }
+    }
+
     private String convertToJson(String key, String value) {
         try {
             Map<String, String> payloadMap = new HashMap<>();
