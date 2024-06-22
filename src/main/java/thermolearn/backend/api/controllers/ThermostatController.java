@@ -187,33 +187,4 @@ public class ThermostatController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
-
-//    @Autowired
-//    private AwsIotService awsIotService;
-//
-//    @PostMapping("/create-thing")
-//    public String pairNewThermostat(@RequestParam String thermostatId) {
-//        String thingName = "thermostat_" + thermostatId;
-//        String thingArn = awsIotService.createThing(thingName);
-//
-//        CreateKeysAndCertificateResponse keysAndCert = awsIotService.createKeysAndCertificate();
-//        String certificateArn = keysAndCert.certificateArn();
-//
-//        awsIotService.attachPolicy("RaspberryPiPolicy", certificateArn);
-//        awsIotService.attachThingPrincipal(thingName, certificateArn);
-//
-//        // Store keysAndCert.certPem(), keysAndCert.keyPair().privateKey(), etc. securely
-//
-//        return thingArn;
-//    }
-
-//    @DeleteMapping("/delete-thing")
-//    public String deleteThermostat(@RequestParam String thermostatId) {
-//        String thingName = "thermostat_" + thermostatId;
-//        awsIotService.deleteThing(thingName);
-//        return "Thing " + thingName + " deleted successfully.";
-//    }
-
-
 }

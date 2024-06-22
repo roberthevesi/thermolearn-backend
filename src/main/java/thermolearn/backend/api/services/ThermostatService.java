@@ -55,7 +55,6 @@ public class ThermostatService {
                 .isPaired(false)
                 .build();
 
-        assert thermostatRepository != null;
         String thermostatId = thermostatRepository.save(thermostat).getId().toString();
 
         assert encryptionUtils != null;
