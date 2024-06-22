@@ -140,35 +140,4 @@ public class UserController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
-    @PostMapping("/set-mode")
-    public ResponseEntity<Object> setMode(@RequestParam String mode, @RequestParam Double desiredTemp) {
-        deviceShadowService.updateShadow(mode, desiredTemp);
-        return ResponseEntity.ok().build();
-//        try {
-//            mqttPublisher.publish("pi/commands", "Hello, World, from backend!");
-//            return ResponseEntity.ok().build();
-//        } catch (Exception e) {
-//            return ResponseEntity.badRequest().body(e.getMessage());
-//        }
-    }
-
-//    @PostMapping("/set-temp")
-//    public ResponseEntity<Object> setTemp(@RequestParam String id) {
-//        try {
-//            mqttPublisher.publishToThermostat(id, "Hello, " + id + ", from backend!");
-//            return ResponseEntity.ok().build();
-//        } catch (Exception e) {
-//            return ResponseEntity.badRequest().body(e.getMessage());
-//        }
-//    }
-
-
-//    @PostMapping("/mode")
-//    public String updateThermostatMode(@RequestParam String thermostatId, @RequestParam String mode) throws Exception {
-//        mqttPublisher.init();
-////        mqttPublisher.publish();
-//        mqttPublisher.publishMode(thermostatId, mode);
-//        return "Mode updated for thermostat " + thermostatId;
-//    }
 }

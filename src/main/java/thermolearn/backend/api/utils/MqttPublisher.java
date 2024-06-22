@@ -23,10 +23,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
@@ -151,8 +148,9 @@ public class MqttPublisher {
     }
 
     public boolean publishUnpairRequest(String thermostatId) throws MqttException {
-        try{
-            Thermostat thermostat = thermostatRepository.findById(UUID.fromString(thermostatId)).orElseThrow(() -> new RuntimeException("Thermostat not found"));
+        try {
+            Thermostat thermostat = thermostatRepository.findById(UUID.fromString(thermostatId))
+                    .orElseThrow(() -> new RuntimeException("Thermostat not found"));
             if (!thermostat.getIsPaired()) {
                 throw new RuntimeException("Thermostat is not paired");
             }
@@ -162,15 +160,14 @@ public class MqttPublisher {
             keyValuePairs.put("unpair", "true");
 
             long epochMillis = System.currentTimeMillis();
-            LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(epochMillis), ZoneId.systemDefault());
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            ZonedDateTime dateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(epochMillis), ZoneId.systemDefault());
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z");
             String formattedDateTime = dateTime.format(formatter);
             keyValuePairs.put("timestamp", formattedDateTime);
 
             publishMultiple(topic, keyValuePairs, true);
             return true;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("Failed to publish unpair request", e);
         }
     }
@@ -212,7 +209,7 @@ public class MqttPublisher {
             });
 
             synchronized (result) {
-                result.wait(5000); // wait for 5 seconds for a message
+                result.wait(5000); 
             }
 
             return result[0];
